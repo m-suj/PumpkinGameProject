@@ -1,6 +1,7 @@
 import arcade
 from pygame.math import Vector2
 
+
 class Player:
     def __init__(self, window: arcade.Window, x: float = 0.0, y: float = 0.0):
         # Basic parameters
@@ -27,13 +28,16 @@ class Player:
         self.vel += self.acc
         self.sprite.center_x += self.vel.x * dt
         self.sprite.center_y += self.vel.y * dt
-        self.vel *= 0.85
+        self.vel *= 0.95
         if self.sprite.bottom < 100:
             self.sprite.bottom = 100
+            self.vel.y = 0
         if self.sprite.right > self.window.width:
             self.sprite.right = self.window.width
+            self.vel.x = 0
         elif self.sprite.left < 0:
             self.sprite.left = 0
+            self.vel.x = 0
 
     def draw(self):
         self.sprite.draw(pixelated=True)

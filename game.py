@@ -1,5 +1,6 @@
 import arcade
 import game_settings as stg
+from scene.class_scene import Scene
 from entities.plant.class_plant import Plant
 from entities.player.class_player import Player
 
@@ -7,6 +8,8 @@ from entities.player.class_player import Player
 class MyGame(arcade.Window):
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
+
+        self.game_scene = None
 
         self.player = None
         arcade.make_transparent_color((255, 255, 255), 0)
@@ -16,6 +19,9 @@ class MyGame(arcade.Window):
 
     def setup(self):
         """ Set up the game variables. Call to re-start the game. """
+        # Creating a scene
+        self.game_scene = Scene(['scene/ground.png', 'scene/background.png'])
+
         # Creating a player
         self.player = Player(self, 100, 100)
 
@@ -26,6 +32,9 @@ class MyGame(arcade.Window):
 
     def on_draw(self):
         self.clear()
+
+        self.game_scene.draw()
+
         for plant in self.plants:
             plant.draw()
         self.player.draw()
