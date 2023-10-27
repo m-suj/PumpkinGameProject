@@ -16,7 +16,6 @@ class Player:
 
         self.sprite = arcade.Sprite(
             'entities/player/sprite_player.png',
-            scale=4,
             center_x=self.pos.x,
             center_y=self.pos.y
         )
@@ -26,10 +25,11 @@ class Player:
 
     def update(self, dt):
         self.vel += self.acc
-        self.sprite.center_x += self.vel.x * dt
-        self.sprite.center_y += self.vel.y * dt
+        self.sprite.change_x = self.vel.x * dt
+        self.sprite.change_y = self.vel.y * dt
         self.vel *= 0.95
-        if self.sprite.bottom < 100:
+
+        """if self.sprite.bottom < 100:
             self.sprite.bottom = 100
             self.vel.y = 0
         if self.sprite.right > self.window.width:
@@ -37,10 +37,7 @@ class Player:
             self.vel.x = 0
         elif self.sprite.left < 0:
             self.sprite.left = 0
-            self.vel.x = 0
-
-    def draw(self):
-        self.sprite.draw(pixelated=True)
+            self.vel.x = 0"""
 
     def key_press(self, key):
         if key == arcade.key.D:
@@ -48,7 +45,7 @@ class Player:
         elif key == arcade.key.A:
             self.acc.x -= self.speed_value
         elif key == arcade.key.SPACE:
-            self.vel.y += self.jump_force
+            self.vel.y = self.jump_force
 
     def key_release(self, key):
         if key == arcade.key.D:
