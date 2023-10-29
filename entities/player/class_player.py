@@ -1,54 +1,82 @@
 import arcade
-from pygame.math import Vector2
+import game_settings as stg
 
 
-class Player:
-    def __init__(self, window: arcade.Window, x: float = 0.0, y: float = 0.0):
+class Player(arcade.Sprite):
+    def __init__(self, x: float = 0.0, y: float = 0.0):
+        super().__init__('entities/player/sprite_player.png', center_x=x, center_y=y)
         # Basic parameters
-        self.window = window
+        self.counter_moving = 0.0
 
         # Player's parameters
-        self.pos = Vector2(x, y)
-        self.vel = Vector2(0.0, 0.0)
-        self.acc = Vector2(0, -100)  # Horizontal movement, gravity
-        self.speed_value = 50
-        self.jump_force = 2000
-
-        self.sprite = arcade.Sprite(
-            'entities/player/sprite_player.png',
-            center_x=self.pos.x,
-            center_y=self.pos.y
-        )
-
-    # def move(self):
+        self.direction = 0  # 0 - stationary, negative - moving left, positive - moving right
+        self.vel = 0
+        self.acc = 0
+        self.speed_value = 150
+        self.gravity = 2
+        self.jump_speed = 20
+        self.is_jumping = False
 
 
-    def update(self, dt):
+        self.append_texture(arcade.load_texture('entities/player/sprite_player_2.png'))
+        self.texture_iter = 0
+        self.texture_iter_lim = 1
+
+    def update_animation(self, dt: float = 1 / 60):
+        # Animating the player while moving
+        if self.acc != 0:
+            self.counter_moving += dt
+            if self.counter_moving >= 0.1:
+                self.counter_moving -= 0.1
+
+                self.texture_iter += 1
+                if self.texture_iter > self.texture_iter_lim:
+                    self.texture_iter = 0
+                self.set_texture(self.texture_iter)
+        else:
+            self.counter_moving = 0
+            self.texture_iter = 0
+            self.set_texture(self.texture_iter)
+
+
+    def update(self, dt: float = 1/60):
+        # Updating movement
+        if self.is_jumping and self.physics_engines[0].can_jump():
+            self.change_y = self.jump_speed
+
+        self.acc = 0 if self.direction == 0 else self.speed_value if self.direction > 0 else -self.speed_value
         self.vel += self.acc
-        self.sprite.change_x = self.vel.x * dt
-        self.sprite.change_y = self.vel.y * dt
-        self.vel *= 0.95
+        self.change_x = self.vel * dt
+        self.vel *= 0.85
 
-        """if self.sprite.bottom < 100:
-            self.sprite.bottom = 100
-            self.vel.y = 0
-        if self.sprite.right > self.window.width:
-            self.sprite.right = self.window.width
-            self.vel.x = 0
-        elif self.sprite.left < 0:
-            self.sprite.left = 0
-            self.vel.x = 0"""
+        # Border check
+        """if self.bottom < 100:
+            self.bottom = 100
+            self.vel = 0"""
+        if self.right > stg.SCREEN_W:
+            self.right = stg.SCREEN_W
+            self.vel = 0
+        elif self.left < 0:
+            self.left = 0
+            self.vel = 0
+
+        # Updating animation based off player's movement
+        self.update_animation(dt)
+
 
     def key_press(self, key):
-        if key == arcade.key.D:
-            self.acc.x += self.speed_value
-        elif key == arcade.key.A:
-            self.acc.x -= self.speed_value
-        elif key == arcade.key.SPACE:
-            self.vel.y = self.jump_force
+        match key:
+            # Left/right movement
+            case arcade.key.D | arcade.key.RIGHT: self.direction += 1
+            case arcade.key.A | arcade.key.LEFT: self.direction -= 1
+            # Jumping
+            case arcade.key.SPACE: self.is_jumping = True
+
 
     def key_release(self, key):
-        if key == arcade.key.D:
-            self.acc.x -= self.speed_value
-        elif key == arcade.key.A:
-            self.acc.x += self.speed_value
+        match key:
+            # Disabling left/right movement
+            case arcade.key.D | arcade.key.RIGHT: self.direction -= 1
+            case arcade.key.A | arcade.key.LEFT: self.direction += 1
+            # Disabling jumping
+            case arcade.key.SPACE: self.is_jumping = False
