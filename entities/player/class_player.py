@@ -50,9 +50,6 @@ class Player(arcade.Sprite):
         self.vel *= 0.85
 
         # Border check
-        """if self.bottom < 100:
-            self.bottom = 100
-            self.vel = 0"""
         if self.right > stg.SCREEN_W:
             self.right = stg.SCREEN_W
             self.vel = 0
@@ -71,6 +68,8 @@ class Player(arcade.Sprite):
             case arcade.key.A | arcade.key.LEFT: self.direction -= 1
             # Jumping
             case arcade.key.SPACE: self.is_jumping = True
+            # Walking
+            case arcade.key.LSHIFT: self.speed_value = 80
 
 
     def key_release(self, key):
@@ -80,3 +79,4 @@ class Player(arcade.Sprite):
             case arcade.key.A | arcade.key.LEFT: self.direction += 1
             # Disabling jumping
             case arcade.key.SPACE: self.is_jumping = False
+            case arcade.key.LSHIFT: self.speed_value = 150

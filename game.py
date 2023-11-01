@@ -39,10 +39,10 @@ class MyGame(arcade.Window):
 
         # Creating environment
         for x in range(30, 1080, 100):
-            plant = Plant(x, 125, self.player.center_x, self.player.center_y)
-            # plant.bottom = 100
+            plant = Plant(x, ground.height)
+
             self.plants.append(plant)
-            self.game_scene.add_sprite('Plants', plant.sprite)
+            self.game_scene.add_sprite('Plants', plant)
 
         # Creating the physics engine
         self.physics_engine = arcade.PhysicsEnginePlatformer(
