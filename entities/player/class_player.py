@@ -7,6 +7,7 @@ class Player(arcade.Sprite):
         super().__init__('entities/player/sprite_player.png', center_x=x, center_y=y)
         # Basic parameters
         self.counter_moving = 0.0
+        self.dt = 0.0
 
         # Player's parameters
         self.direction = 0  # 0 - stationary, negative - moving left, positive - moving right
@@ -22,7 +23,7 @@ class Player(arcade.Sprite):
         self.texture_iter = 0
         self.texture_iter_lim = 1
 
-    def update_animation(self, dt: float = 1 / 60):
+    def update_animation(self, dt: float):
         # Animating the player while moving
         if self.acc != 0:
             self.counter_moving += dt
@@ -39,23 +40,25 @@ class Player(arcade.Sprite):
             self.set_texture(self.texture_iter)
 
 
-    def update(self, dt: float = 1/60):
+    def on_update(self, dt: float):
         # Updating movement
         if self.is_jumping and self.physics_engines[0].can_jump():
             self.change_y = self.jump_speed
 
+        # Insta braking when not holding direction key, else accelerate +/- depending on direction
         self.acc = 0 if self.direction == 0 else self.speed_value if self.direction > 0 else -self.speed_value
         self.vel += self.acc
         self.change_x = self.vel * dt
+
         self.vel *= 0.85
 
         # Border check
-        if self.right > stg.SCREEN_W:
+        if self.right + self.change_x > stg.SCREEN_W:
             self.right = stg.SCREEN_W
-            self.vel = 0
-        elif self.left < 0:
+            self.change_x = 0
+        elif self.left + self.change_x < 0:
             self.left = 0
-            self.vel = 0
+            self.change_x = 0
 
         # Updating animation based off player's movement
         self.update_animation(dt)
