@@ -12,9 +12,9 @@ class Player(arcade.Sprite):
         self.direction = 0  # 0 - stationary, negative - moving left, positive - moving right
         self.vel = 0
         self.acc = 0
-        self.speed_value = 150
-        self.gravity = 2
-        self.jump_force = 20
+        self.speed_value = 100
+        self.gravity = 1
+        self.jump_force = 15
         self.is_jumping = False
 
 
@@ -81,4 +81,4 @@ class Player(arcade.Sprite):
             case arcade.key.A | arcade.key.LEFT: self.direction += 1
             # Disabling jumping
             case arcade.key.SPACE: self.is_jumping = False
-            case arcade.key.LSHIFT: self.speed_value = 150
+            case arcade.key.LSHIFT: self.speed_value = 100
