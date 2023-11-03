@@ -7,7 +7,6 @@ class Player(arcade.Sprite):
         super().__init__('entities/player/sprite_player.png', center_x=x, center_y=y)
         # Basic parameters
         self.counter_moving = 0.0
-        self.dt = 0.0
 
         # Player's parameters
         self.direction = 0  # 0 - stationary, negative - moving left, positive - moving right
@@ -15,7 +14,7 @@ class Player(arcade.Sprite):
         self.acc = 0
         self.speed_value = 150
         self.gravity = 2
-        self.jump_speed = 20
+        self.jump_force = 20
         self.is_jumping = False
 
 
@@ -43,7 +42,7 @@ class Player(arcade.Sprite):
     def on_update(self, dt: float):
         # Updating movement
         if self.is_jumping and self.physics_engines[0].can_jump():
-            self.change_y = self.jump_speed
+            self.physics_engines[0].jump(self.jump_force)
 
         # Insta braking when not holding direction key, else accelerate +/- depending on direction
         self.acc = 0 if self.direction == 0 else self.speed_value if self.direction > 0 else -self.speed_value
@@ -72,7 +71,7 @@ class Player(arcade.Sprite):
             # Jumping
             case arcade.key.SPACE: self.is_jumping = True
             # Walking
-            case arcade.key.LSHIFT: self.speed_value = 80
+            case arcade.key.LSHIFT: self.speed_value = 50
 
 
     def key_release(self, key):

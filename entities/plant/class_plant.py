@@ -4,12 +4,26 @@ from math import sqrt
 
 class Plant(arcade.Sprite):
     def __init__(self, x, y, player):
-        super().__init__('entities/plant/sprite_plant_0.png', image_height=50, image_width=32, center_x=x, center_y=y+25)
+        img_width, img_height = 36, 50
+        txtr_count = 4
+        super().__init__(
+            filename='entities/plant/multi-sprite_plant.png',
+            image_height=img_height,
+            image_width=img_width,
+            center_x=x,
+            center_y=y+25
+        )
 
         # Graphics
-        self.append_texture(arcade.load_texture('entities/plant/sprite_plant_0.png', x=32, height=50, width=32))
-        self.append_texture(arcade.load_texture('entities/plant/sprite_plant_0.png', x=64, height=50, width=32))
-        self.append_texture(arcade.load_texture('entities/plant/sprite_plant_0.png', x=96, height=50, width=32))
+        for x in range(img_width, img_width*txtr_count, img_width):
+            self.append_texture(
+                arcade.load_texture(
+                    'entities/plant/multi-sprite_plant.png',
+                    x=x,
+                    height=img_height,
+                    width=img_width
+                )
+            )
 
         # Animation settings
         self.player = player
