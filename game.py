@@ -71,12 +71,47 @@ class MyGame(arcade.Window):
         self.clear()
         self.game_scene.draw()
 
+        if self.game_scene['Player'][0].dead:
+            arcade.draw_rectangle_filled(
+                center_x=stg.SCREEN_W/2,
+                center_y=stg.SCREEN_H/2,
+                width=810,
+                height=480,
+                color=arcade.color.BLACK
+            )
+            arcade.draw_rectangle_outline(
+                center_x=stg.SCREEN_W/2,
+                center_y=stg.SCREEN_H/2,
+                width=810,
+                height=480,
+                color=arcade.color.WHITE,
+                border_width=5
+            )
+            arcade.draw_text(
+                text='GAME OVER, PRESS:\nENTER - CONTINUE\nESC - QUIT',
+                start_x=stg.SCREEN_W/2,
+                start_y=stg.SCREEN_H/2,
+                color=arcade.color.YELLOW,
+                font_size=48,
+                width=720,
+                align='center',
+                anchor_x='center',
+                anchor_y='center',
+                multiline=False
+            )
+        arcade.draw_text(self.game_scene['Player'][0].lives, 20, stg.SCREEN_H - 60, arcade.color.YELLOW, font_size=48)
+
 
     def on_update(self, delta_time):
-        self.game_scene.on_update(delta_time)
-        self.pe_player.update()
-        for pe in self.pe_list_pumpkin:
-            pe.update()
+        if not self.game_scene['Player'][0].dead:
+            self.game_scene.on_update(delta_time)
+            self.pe_player.update()
+            for pe in self.pe_list_pumpkin:
+                pe.update()
+
+            pumpkins = self.game_scene['Player'][0].collides_with_list(self.game_scene['Pumpkin'])
+            if pumpkins:
+                self.game_scene['Player'][0].take_hit(damage=pumpkins[0].damage)
 
 
     def on_key_press(self, key, key_modifiers):
@@ -99,7 +134,13 @@ class MyGame(arcade.Window):
                 self.pumpkin_count += 1
 
         # Scene Events
-        self.game_scene['Player'][0].key_press(key)
+        if not self.game_scene['Player'][0].dead:
+            self.game_scene['Player'][0].key_press(key)
+        else:
+            match key:
+                case arcade.key.ENTER:
+                    self.setup()
+
 
     def on_key_release(self, key, key_modifiers):
         self.game_scene['Player'][0].key_release(key)

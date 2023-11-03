@@ -6,6 +6,10 @@ class Pumpkin(arcade.Sprite):
     def __init__(self, x, y):
         super().__init__('entities/pumpkin/sprite_pumpkin.png', center_x=x, center_y=y)
 
+        # Combat parameters
+        self.damage = 1
+
+        # Physical parameters
         self.speed = 300
         self.jump_force = 15
         self.gravity = 0.25
@@ -20,3 +24,8 @@ class Pumpkin(arcade.Sprite):
         if self.right + self.change_x > stg.SCREEN_W or self.left + self.change_x < 0:
             self.change_x = 0
             self.speed *= -1
+
+
+    def draw(self):
+        self.draw()
+        self.draw_hit_box()
