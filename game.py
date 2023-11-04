@@ -27,7 +27,7 @@ class MyGame(arcade.Window):
         self.game_scene.add_sprite_list('Plants')
 
         # Creating a pumpkin
-        pumpkin = Pumpkin(stg.SCREEN_W/2, stg.SCREEN_H - 100)
+        pumpkin = Pumpkin(stg.SCREEN_W/2, stg.SCREEN_H - 100, 3)
         self.game_scene.add_sprite('Pumpkin', pumpkin)
 
         # Creating a player
@@ -70,6 +70,7 @@ class MyGame(arcade.Window):
     def on_draw(self):
         self.clear()
         self.game_scene.draw()
+        self.game_scene.draw_hit_boxes()
 
         if self.game_scene['Player'][0].dead:
             arcade.draw_rectangle_filled(
@@ -111,7 +112,7 @@ class MyGame(arcade.Window):
 
             pumpkins = self.game_scene['Player'][0].collides_with_list(self.game_scene['Pumpkin'])
             if pumpkins:
-                self.game_scene['Player'][0].take_hit(damage=pumpkins[0].damage)
+                self.game_scene['Player'][0].take_hit(damage=pumpkins[0].stats['damage'])
 
 
     def on_key_press(self, key, key_modifiers):
@@ -120,8 +121,9 @@ class MyGame(arcade.Window):
             case arcade.key.ESCAPE:
                 self.close()
 
-            case arcade.key.SLASH:
-                pumpkin = Pumpkin(stg.SCREEN_W/2, stg.SCREEN_H - 100)
+            case arcade.key.NUM_1 | arcade.key.NUM_2 | arcade.key.NUM_3 | arcade.key.NUM_4:
+                stage = key - arcade.key.NUM_1
+                pumpkin = Pumpkin(stg.SCREEN_W/2, stg.SCREEN_H - 100, stage)
                 self.game_scene.add_sprite('Pumpkin', pumpkin)
                 self.pe_list_pumpkin.append(
                     arcade.PhysicsEnginePlatformer(
