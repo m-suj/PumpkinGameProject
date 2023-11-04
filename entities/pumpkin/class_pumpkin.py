@@ -36,23 +36,29 @@ pumpkin_stats = {
 
 
 class Pumpkin(arcade.Sprite):
-    def __init__(self, x, y, stage):
-        self.stats = pumpkin_stats[stage]
+    def __init__(self, x, y, stage, direction=1):
+        self.stats = pumpkin_stats[stage].copy()
         super().__init__(
             filename='entities/pumpkin/sprite_pumpkin.png',
             center_x=x, center_y=y,
             scale=self.stats['sprite_scale']
         )
         self.set_hit_box([[p[0]*0.8, p[1]*0.8] for p in self._points])
+
+        self.stage = stage
         self.gravity = .25
-        self.dir = 1
+        self.dir = direction
+
+
+    def take_damage(self, damage):
+        self.stats['health'] -= damage
 
 
     def on_update(self, dt: float):
         if self.physics_engines[0].can_jump():
             self.physics_engines[0].jump(self.stats['jump_force'])
         self.change_x = self.dir * self.stats['speed'] * dt
-        self.change_angle = -50*dt
+        self.change_angle = 60*dt
 
         if self.right + self.change_x > stg.SCREEN_W or self.left + self.change_x < 0:
             self.change_x = 0

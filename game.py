@@ -100,6 +100,8 @@ class MyGame(arcade.Window):
         self.clear()
         self.game_scene.draw()
         # self.game_scene.draw_hit_boxes()
+        for projectile in self.game_scene['Player'][0].projectiles:
+            projectile.draw()
 
         arcade.draw_text(self.game_scene['Player'][0].lives, 20, stg.SCREEN_H - 60, arcade.color.YELLOW, font_size=48)
         if self.game_scene['Player'][0].dead:
@@ -113,9 +115,45 @@ class MyGame(arcade.Window):
             for pe in self.pe_list_pumpkin:
                 pe.update()
 
+            # Player with pumpkins collisions
             pumpkins = self.game_scene['Player'][0].collides_with_list(self.game_scene['Pumpkin'])
             if pumpkins:
                 self.game_scene['Player'][0].take_hit(damage=pumpkins[0].stats['damage'])
+            # Projectiles with pumpkins
+            for pumpkin in self.game_scene['Pumpkin']:
+                projectiles = pumpkin.collides_with_list(self.game_scene['Player'][0].projectiles)
+                if projectiles:
+                    pumpkin.take_damage(sum([projectile.damage for projectile in projectiles]))
+                    if pumpkin.stats['health'] <= 0:
+                        if pumpkin.stage > 0:
+                            pumpkin_child_1 = Pumpkin(pumpkin.center_x, pumpkin.center_y, pumpkin.stage - 1, -1)
+                            pumpkin_child_2 = Pumpkin(pumpkin.center_x, pumpkin.center_y, pumpkin.stage - 1, 1)
+                            self.game_scene.add_sprite('Pumpkin', pumpkin_child_1)
+                            self.game_scene.add_sprite('Pumpkin', pumpkin_child_2)
+
+                            self.pe_list_pumpkin.append(
+                                arcade.PhysicsEnginePlatformer(
+                                    player_sprite=pumpkin_child_1,
+                                    gravity_constant=pumpkin_child_1.gravity,
+                                    walls=self.game_scene['Ground']
+                                )
+                            )
+                            pumpkin_child_1.register_physics_engine(self.pe_list_pumpkin[self.pumpkin_count])
+                            self.pe_list_pumpkin.append(
+                                arcade.PhysicsEnginePlatformer(
+                                    player_sprite=pumpkin_child_2,
+                                    gravity_constant=pumpkin_child_2.gravity,
+                                    walls=self.game_scene['Ground']
+                                )
+                            )
+                            pumpkin_child_2.register_physics_engine(self.pe_list_pumpkin[self.pumpkin_count + 1])
+                            self.pumpkin_count += 2
+                        self.pe_list_pumpkin.remove(pumpkin.physics_engines[0])
+                        self.game_scene['Pumpkin'].remove(pumpkin)
+                        self.pumpkin_count -= 1
+                    for projectile in projectiles:
+                        projectile.remove_from_sprite_lists()
+
 
 
     def on_key_press(self, key, key_modifiers):

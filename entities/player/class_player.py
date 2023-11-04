@@ -1,22 +1,26 @@
 import arcade
 import game_settings as stg
+from entities.player.projectile.class_projectile import Projectile
+
+
+class ControlBinds:
+    go_left = arcade.key.A
+    go_right = arcade.key.D
+    shoot = arcade.key.W
+    jump = arcade.key.SPACE
+    walk = arcade.key.LSHIFT
 
 
 class Player(arcade.Sprite):
     def __init__(self, x: float = 0.0, y: float = 0.0):
         super().__init__('entities/player/sprite_player.png', center_x=x, center_y=y)
-        self.set_hit_box([
-            [-24, -64],
-            [-24, 56],
-            [24, 56],
-            [24, -64]
-        ])
+        self.set_hit_box([[-24, -64], [-24, 56],  [24, 56], [24, -64]])
 
-        # Gameplay parameters
+        # Health parameters
         self.dead = False
         self.lives = 5
         self.immune = False
-        self.immunity_counter, self.iframe_lim = 0.0, 1
+        self.immunity_counter, self.IMMUNITY_LENGTH = 0.0, 1
 
         # Physics parameters
         self.direction = 0  # 0 - stationary, negative - moving left, positive - moving right
@@ -24,9 +28,17 @@ class Player(arcade.Sprite):
         self.acc = 0
         self.friction = 0.85
         self.speed_value = 100
-        self.gravity = 1
-        self.jump_force = 20
+        # Jumping
         self.is_jumping = False
+        self.jump_force = 20
+        self.gravity = 1
+
+        # Shooting parameters
+        self.is_shooting = False
+        self.SHOOTING_CD_LIM = 0.3
+        self.shooting_cooldown = self.SHOOTING_CD_LIM
+        # Projectiles
+        self.projectiles = arcade.SpriteList()
 
         # Sprite textures and parameters
         self.append_texture(arcade.load_texture('entities/player/sprite_player_2.png'))
@@ -34,7 +46,7 @@ class Player(arcade.Sprite):
         self.texture_iter = 0
         self.texture_iter_lim = 1
         # How many full cycles (denominator) of changing sprite's alpha during one immunity duration (nominator)
-        self.immune_animation_speed = self.iframe_lim / 3
+        self.IMMUNE_ANIMATION_CD_LIM = self.IMMUNITY_LENGTH / 4
         self.immune_animation_counter = 0.0
 
 
@@ -42,7 +54,7 @@ class Player(arcade.Sprite):
         # Check if player can take hit, then damage him and apply i-frames
         if not self.immune:
             self.immune = True
-            self.immunity_counter = self.iframe_lim
+            self.immunity_counter = self.IMMUNITY_LENGTH
 
             # Hurt the player and check if he died
             self.lives -= damage
@@ -51,25 +63,32 @@ class Player(arcade.Sprite):
                 self.dead = True
 
 
+    def shoot(self, dt: float):
+        # Update projectiles
+        if self.projectiles:
+            for projectile in self.projectiles:
+                projectile.on_update(dt)
+
+        # Manage shooting cooldown
+        if self.shooting_cooldown < self.SHOOTING_CD_LIM:
+            self.shooting_cooldown += dt
+        # Shoot
+        if self.is_shooting and self.shooting_cooldown >= self.SHOOTING_CD_LIM:
+            self.shooting_cooldown -= self.SHOOTING_CD_LIM
+            self.projectiles.append(Projectile(self.left, self.center_y))
+
+
     def update_immune_animation(self, dt: float):
         self.immune_animation_counter += dt
-        if self.immune_animation_counter >= self.immune_animation_speed / 2:
-            self.immune_animation_counter -= self.immune_animation_speed / 2
-
-        self.alpha = 255 * (self.immune_animation_counter / (self.immune_animation_speed / 2))
-
-
-        """alpha_stage = self.immunity_counter % 0.1
-        if (self.immunity_counter - alpha_stage) % 2:
-            alpha_stage = 0.1 - alpha_stage
-        self.alpha = 255 * 10 * alpha_stage"""
+        while self.immune_animation_counter >= self.IMMUNE_ANIMATION_CD_LIM:
+            self.immune_animation_counter -= self.IMMUNE_ANIMATION_CD_LIM
+        self.alpha = 255 * (self.immune_animation_counter / self.IMMUNE_ANIMATION_CD_LIM)
 
         self.immunity_counter -= dt
         if self.immunity_counter <= 0:
-            self.immunity_counter = self.iframe_lim
+            self.immunity_counter = self.IMMUNITY_LENGTH
             self.immune = False
             self.alpha = 255
-
 
 
     def update_movement_animation(self, dt: float):
@@ -108,6 +127,9 @@ class Player(arcade.Sprite):
             self.left = 0
             self.change_x = 0
 
+        # Shoot
+        self.shoot(dt)
+
         # Update animation
         self.update_movement_animation(dt)
         if self.immune:
@@ -117,19 +139,24 @@ class Player(arcade.Sprite):
     def key_press(self, key):
         match key:
             # Left/right movement
-            case arcade.key.D | arcade.key.RIGHT: self.direction += 1
-            case arcade.key.A | arcade.key.LEFT: self.direction -= 1
-            # Jumping
-            case arcade.key.SPACE: self.is_jumping = True
-            # Walking
-            case arcade.key.LSHIFT: self.speed_value = 50
+            case ControlBinds.go_left: self.direction -= 1
+            case ControlBinds.go_right: self.direction += 1
+            # Jump
+            case ControlBinds.jump: self.is_jumping = True
+            # Walk
+            case ControlBinds.walk: self.speed_value = 50
+            # Shoot
+            case ControlBinds.shoot: self.is_shooting = True
 
 
     def key_release(self, key):
         match key:
-            # Disabling left/right movement
-            case arcade.key.D | arcade.key.RIGHT: self.direction -= 1
-            case arcade.key.A | arcade.key.LEFT: self.direction += 1
-            # Disabling jumping
-            case arcade.key.SPACE: self.is_jumping = False
-            case arcade.key.LSHIFT: self.speed_value = 100
+            # Disable left/right movement
+            case ControlBinds.go_left: self.direction += 1
+            case ControlBinds.go_right: self.direction -= 1
+            # Disable jumping
+            case ControlBinds.jump: self.is_jumping = False
+            # Disable walking
+            case ControlBinds.walk: self.speed_value = 100
+            # Shoot
+            case ControlBinds.shoot: self.is_shooting = False
