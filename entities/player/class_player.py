@@ -5,6 +5,12 @@ import game_settings as stg
 class Player(arcade.Sprite):
     def __init__(self, x: float = 0.0, y: float = 0.0):
         super().__init__('entities/player/sprite_player.png', center_x=x, center_y=y)
+        self.set_hit_box([
+            [-24, -64],
+            [-24, 56],
+            [24, 56],
+            [24, -64]
+        ])
 
         # Gameplay parameters
         self.dead = False
@@ -19,7 +25,7 @@ class Player(arcade.Sprite):
         self.friction = 0.85
         self.speed_value = 100
         self.gravity = 1
-        self.jump_force = 15
+        self.jump_force = 20
         self.is_jumping = False
 
         # Sprite textures and parameters
@@ -41,6 +47,7 @@ class Player(arcade.Sprite):
             # Hurt the player and check if he died
             self.lives -= damage
             if self.lives <= 0:
+                self.lives = ':('
                 self.dead = True
 
 

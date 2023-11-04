@@ -5,6 +5,36 @@ from entities.player.class_player import Player
 from entities.pumpkin.class_pumpkin import Pumpkin
 
 
+def display_death_screen():
+    arcade.draw_rectangle_filled(
+        center_x=stg.SCREEN_W / 2,
+        center_y=stg.SCREEN_H / 2,
+        width=810,
+        height=480,
+        color=arcade.color.BLACK
+    )
+    arcade.draw_rectangle_outline(
+        center_x=stg.SCREEN_W / 2,
+        center_y=stg.SCREEN_H / 2,
+        width=810,
+        height=480,
+        color=arcade.color.WHITE,
+        border_width=5
+    )
+    arcade.draw_text(
+        text='GAME OVER, PRESS:\nENTER - CONTINUE\nESC - QUIT',
+        start_x=stg.SCREEN_W / 2,
+        start_y=stg.SCREEN_H / 2,
+        color=arcade.color.YELLOW,
+        font_size=48,
+        width=720,
+        align='center',
+        anchor_x='center',
+        anchor_y='center',
+        multiline=False
+    )
+
+
 class MyGame(arcade.Window):
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
@@ -56,51 +86,24 @@ class MyGame(arcade.Window):
         )
         player.register_physics_engine(self.pe_player)
 
-        self.pe_list_pumpkin.append(
+        self.pe_list_pumpkin = [(
             arcade.PhysicsEnginePlatformer(
                 player_sprite=pumpkin,
                 gravity_constant=pumpkin.gravity,
                 walls=self.game_scene['Ground']
             )
-        )
+        )]
         pumpkin.register_physics_engine(self.pe_list_pumpkin[0])
-        self.pumpkin_count += 1
-
+        self.pumpkin_count = 1
 
     def on_draw(self):
         self.clear()
         self.game_scene.draw()
-        self.game_scene.draw_hit_boxes()
+        # self.game_scene.draw_hit_boxes()
 
-        if self.game_scene['Player'][0].dead:
-            arcade.draw_rectangle_filled(
-                center_x=stg.SCREEN_W/2,
-                center_y=stg.SCREEN_H/2,
-                width=810,
-                height=480,
-                color=arcade.color.BLACK
-            )
-            arcade.draw_rectangle_outline(
-                center_x=stg.SCREEN_W/2,
-                center_y=stg.SCREEN_H/2,
-                width=810,
-                height=480,
-                color=arcade.color.WHITE,
-                border_width=5
-            )
-            arcade.draw_text(
-                text='GAME OVER, PRESS:\nENTER - CONTINUE\nESC - QUIT',
-                start_x=stg.SCREEN_W/2,
-                start_y=stg.SCREEN_H/2,
-                color=arcade.color.YELLOW,
-                font_size=48,
-                width=720,
-                align='center',
-                anchor_x='center',
-                anchor_y='center',
-                multiline=False
-            )
         arcade.draw_text(self.game_scene['Player'][0].lives, 20, stg.SCREEN_H - 60, arcade.color.YELLOW, font_size=48)
+        if self.game_scene['Player'][0].dead:
+            display_death_screen()
 
 
     def on_update(self, delta_time):
@@ -136,12 +139,13 @@ class MyGame(arcade.Window):
                 self.pumpkin_count += 1
 
         # Scene Events
+        for pumpkin in self.game_scene['Pumpkin']:
+            pumpkin.on_key_press(key)
+
         if not self.game_scene['Player'][0].dead:
             self.game_scene['Player'][0].key_press(key)
-        else:
-            match key:
-                case arcade.key.ENTER:
-                    self.setup()
+        elif key == arcade.key.ENTER:
+            self.setup()
 
 
     def on_key_release(self, key, key_modifiers):
